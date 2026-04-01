@@ -15,7 +15,7 @@ public class FruitController {
         Fruit bean = new Fruit(); // bean이 저장될 데이터
         bean.setId("banana");
         bean.setName("바나나");
-        bean.setPrice(1000);
+        bean.setPrice(9999);
         return bean;
     }
 
