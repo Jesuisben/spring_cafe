@@ -1,6 +1,7 @@
 package com.coffee.entity;
 
 import com.coffee.constant.Role;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -19,6 +20,7 @@ public class Member {
     // 밑에 어노테이션 3개는 바로 밑에 변수에만 적용됨
     @Id // 프라이머리 키
     @GeneratedValue(strategy = GenerationType.AUTO) // 숫자 생성할때 AUTO로 생성하겠다.
+
     @Column(name = "member_id") // pk 컬럼 이름 : 테이블단수명_id
     private Long id ;
 
@@ -42,5 +44,6 @@ public class Member {
     @Enumerated(EnumType.STRING) // 나열, 열거하다 (아까 USER, ADMIN 열거)
     private Role role; // 일반인 또는 관리자
 
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate regdate ; // 등록 일자
 }

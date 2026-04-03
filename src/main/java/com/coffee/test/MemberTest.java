@@ -37,5 +37,27 @@ public class MemberTest {
         mem01.setRegdate(LocalDate.now());
 
         memberRepository.save(mem01) ;
+        System.out.println("----------------------------------------");
+
+        Member mem02 = new Member();
+        mem02.setName("유영석");
+        mem02.setEmail("bluesky@naver.com");
+        mem02.setPassword(passwordEncoder.encode("Bluesky@456"));
+        mem02.setAddress("용산구 이태원동");
+        mem02.setRole(Role.USER);
+        mem02.setRegdate(LocalDate.now());
+        memberRepository.save(mem02) ;
+        System.out.println("----------------------");
+
+        Member mem03 = new Member();
+        mem03.setName("곰돌이");
+        mem03.setEmail("gomdori@naver.com");
+        mem03.setPassword(passwordEncoder.encode("Gomdori@789"));
+        mem03.setAddress("동대문구 휘경동");
+        mem03.setRole(Role.USER);
+        mem03.setRegdate(LocalDate.now());
+        memberRepository.save(mem03) ;
+        System.out.println("----------------------");
+
     }
 }
