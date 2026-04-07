@@ -3,6 +3,8 @@ package com.coffee.config;
 import com.coffee.entity.Member;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
@@ -11,22 +13,29 @@ import java.util.Map;
 
 @Component
 public class JwtTokenProvider { // JWT 생성, 검증 기능 담당자 클래스
-    // 이 값도 사실 노출 방지를 위하여 어딘가에 숨겨야 함
-    private final String SECRET_KEY =
-            "my-secret-key-my-secret-key-my-secret-key";
+    @Value("${jwt.secret}")
+    private String secretKey;
 
-    private Key getSigningKey(){ // 위조 방지를 위한 서명
-        return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
+    @Value("${jwt.expiration}")
+    private long expiration; // 만료 1 시간
+
+    private Key signingKey;
+
+    @PostConstruct
+    protected void init() {
+        this.signingKey = Keys.hmacShaKeyFor(secretKey.getBytes());
     }
 
-    private final long EXPIRATION = 1000 * 60 * 60 ; // 만료 1 시간
+    private Key getSigningKey() {
+        return signingKey; // 위조 방지를 위한 서명
+    }
 
     // MemberController 클래스에서 인증 성공한 사용자를 위하여 로그인 증명서(토큰)를 발급하는 데 사용될 예정입니다.
     public String createToken(Member member){ // 매개 변수 : 토큰 안에 사용자 식별값 저장
         return Jwts.builder()
                 .setSubject(member.getEmail()) // 토큰 주인
                 .setIssuedAt(new Date()) // 토큰 발급 시간
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION)) // 토큰 만료 시간
+                .setExpiration(new Date(System.currentTimeMillis() + expiration)) // 토큰 만료 시간
 
 
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)

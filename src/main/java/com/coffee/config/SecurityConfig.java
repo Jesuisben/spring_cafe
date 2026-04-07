@@ -1,49 +1,70 @@
 package com.coffee.config;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfigurationSource;
 
-@Configuration // 이 파일은 스프링에서 설정용 파일로 사용하겠습니다.
+@Configuration
+@RequiredArgsConstructor
 public class SecurityConfig {
+
+    // JwtTokenProvider.java에서 @Component로 생성함
+    private final JwtTokenProvider jwtTokenProvider;
+
+    // CorsConfig.java에 CorsConfigurationSource의 @Bean으로 객체 생성이 되어 있음
+    private final CorsConfigurationSource corsConfigurationSource;
+
     @Bean
-    public PasswordEncoder passwordEncoder(){
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // Java의 객체를 부르는 이름이 Bean임 (Bean = 객체)
-    @Bean // 어노테이션 bean은 이 아래에 있는 것을 객체로 만든다는 의미 (Java에서 클래스 객체명 = new 생성자() 형식으로 만드는 것과 같음)
+    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
-/*
-    1. /images/** 경로는 로그인 안 해도 접근 허용
-    2. 이미지 요청을 제외한 나머지 모든 요청은 로그인이 필요합니다.
-       /login 페이지는 직접 구현 요망
-*/
-        // 인증 없이 요청을 허용할 url 배열 (배열 생성 초기화 기법)
         String[] permitUrls = {
-                "/images/**", "/fruit/**", "/css/**", "/js/**", "/member/signup", "/member/login"
+                "/images/**",
+                "/fruit/**",
+                "/css/**",
+                "/js/**",
+                "/member/signup",
+                "/member/login",
+                "/product/list"
         };
 
-
-        // Spring Security 기본 정책 : POST / PUT / DELETE 요청은 CSRF 토큰 필요
-        // 지금은 CSRF을 일단 비활성화 시켜 두고, 이후 JWT를 사용하면 지금 겪는 문제(CSRF + 리다이렉트)는 깔끔하게 해결됩니다.
         http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(permitUrls).permitAll() // 이미지 허용
-                        .anyRequest().authenticated()
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-                .formLogin(form -> form
-                        .loginPage("/member/login") // 커스텀 로그인 페이지
-                        .permitAll()
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(permitUrls).permitAll()
+                        .anyRequest().authenticated()
                 );
 
-        http.cors(cors -> {});
+        // JWT 필터 등록 (JwtAuthenticationFilter에 생성되어있음)
+        http.addFilterBefore(
+                new JwtAuthenticationFilter(jwtTokenProvider),
+                UsernamePasswordAuthenticationFilter.class
+        );
 
         return http.build();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(
+            AuthenticationConfiguration config
+    ) throws Exception {
+        return config.getAuthenticationManager();
     }
 }
