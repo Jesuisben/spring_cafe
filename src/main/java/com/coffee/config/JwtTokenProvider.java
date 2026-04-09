@@ -39,7 +39,7 @@ public class JwtTokenProvider { // JWT 생성, 검증 기능 담당자 클래스
 
 
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
-                .setClaims(Map.of("role", member.getRole().name())) // 권한 정보
+                .claim("role", member.getRole().name()) // 권한 정보
                 .compact(); // 최종 문자열 생성하기
     }
 
