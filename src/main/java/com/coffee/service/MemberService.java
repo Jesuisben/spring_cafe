@@ -9,6 +9,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -32,5 +33,9 @@ public class MemberService { // MemberService가 MemberRepository를 의존하�
         bean.setPassword(encodedPassword);
 
         memberRepository.save(bean);
+    }
+
+    public Optional<Member> findMemberById(Long memberId){
+        return this.memberRepository.findById(memberId);
     }
 }

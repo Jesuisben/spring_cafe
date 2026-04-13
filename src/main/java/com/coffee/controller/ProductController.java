@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 
 @RestController
@@ -58,12 +59,14 @@ public class ProductController {
 
     @PostMapping("/insert")
     public ResponseEntity<?> insert(@Valid @RequestBody Product product, BindingResult bindingResult) {
+        // 1. 유효성 검사 실패시
         if (bindingResult.hasErrors()) { // bindingResult에 문제가 있으면
             Map<String, String> errors = new HashMap<>();
             for (FieldError xx : bindingResult.getFieldErrors()) {
                 errors.put(xx.getField(), xx.getDefaultMessage());
             }
 
+            // 404 Bad Request + 에러 메시지
             return new ResponseEntity<>(
                     Map.of(
                             "message", "상품 등록 유효성 검사에 문제가 있습니다.",
@@ -116,4 +119,78 @@ public class ProductController {
 
         }
     }
+
+    // ProductUpdateForm.tsx에 customAxios.get()때문에 GetMapping해야함
+    @GetMapping("/update/{id}")
+    public ResponseEntity<Product> getUpdate(@PathVariable Long id) {
+        System.out.println("수정할 상품 번호 : " + id);
+
+        Product product = this.productService.getProductById(id);
+
+        if (product == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        } else { // 200번대여서 ok
+            return ResponseEntity.ok(product);
+        }
+    }
+
+    // 상품 수정
+    @PutMapping("/update/{id}")
+    // @PathVariable Long id는 유일한 id가 있음을 표현 - 상품 등록과 수정의 차이점
+    public ResponseEntity<?> putUpdate(@PathVariable Long id,
+                                       @Valid @RequestBody Product updatedProduct,
+                                       BindingResult bindingResult) {
+        // 유효성 검사
+        if (bindingResult.hasErrors()) {
+            Map<String, String> errors = new HashMap<>();
+            for (FieldError xx : bindingResult.getFieldErrors()) {
+                errors.put(xx.getField(), xx.getDefaultMessage());
+            }
+            return new ResponseEntity<>(
+                    Map.of(
+                            "message", "상품 수정 유효성 검사에 문제가 있습니다.",
+                            "errors", errors
+                    ),
+                    HttpStatus.BAD_REQUEST
+            );
+        }
+
+        // 상품 정보 수정
+        Optional<Product> findProduct = productService.findById(id);
+
+        if (findProduct.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        try {
+            Product saveProduct = findProduct.get();
+            this.productService.updateProduct(saveProduct, updatedProduct);
+
+            return ResponseEntity.ok(Map.of("message", "상품 수정 성공"));
+
+        } catch (Exception err) {
+            return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(
+                    Map.of(
+                            "message", err.getMessage(),
+                            "error", "상품 수정 실패"
+                    )
+                );
+        }
+
+
+    }
+
+    @GetMapping("/detail/{id}")
+    public ResponseEntity<Product> detail(@PathVariable Long id){
+        Product product = productService.getProductById(id) ;
+
+        if (product == null){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }else{
+            return ResponseEntity.ok(product);
+        }
+    }
+
 }

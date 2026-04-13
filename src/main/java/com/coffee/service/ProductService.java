@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ProductService {
@@ -113,6 +114,56 @@ public class ProductService {
         }
 
 
+    }
+
+    // 상품 수정 버튼 클릭시 컨트롤러로 갔다가 여기로 옴
+    public Product getProductById(Long id) {
+        Optional<Product> product = this.productRepository.findById(id);
+
+        return product.orElse(null);
+    }
+
+    public Optional<Product> findById(Long id) {
+        return this.productRepository.findById(id);
+    }
+
+    private void deleteOldImage(String oldImageFileName) {
+        // oldImageFileName가 무의미하면 return
+        if (oldImageFileName == null || oldImageFileName.isBlank()) {
+            return;
+        }
+
+        // 기존의 이미지 파일 경로 변수를 이용해서 해당 파일의 경로 설정해서 객체 생성
+        File oldImageFile = new File(productImageLocation + oldImageFileName);
+
+        // oldImageFile이 존재하면
+        if (oldImageFile.exists()) {
+            // 삭제하기 (삭제시 deleted는 true)
+            boolean deleted = oldImageFile.delete();
+            if (!deleted) { // 삭제 실패 (삭제 실패시 deleted는 false) - (!deleted는 true)
+                System.out.println("기존 이미지 삭제 실패 : " + oldImageFileName);
+            }
+        }
+    }
+
+    // Product 수정 (읽고와서 쓰기 한 것)
+    public Product updateProduct(Product savedProduct, Product updatedProduct) {
+        savedProduct.setName(updatedProduct.getName());
+        savedProduct.setPrice(updatedProduct.getPrice());
+        savedProduct.setCategory(updatedProduct.getCategory());
+        savedProduct.setStock(updatedProduct.getStock());
+        savedProduct.setDescription(updatedProduct.getDescription());
+
+        if (updatedProduct.getImage() != null && updatedProduct.getImage().startsWith("data:image")) {
+            deleteOldImage(savedProduct.getImage());
+            String imageFileName = saveProductImage(updatedProduct.getImage());
+            savedProduct.setImage(imageFileName);
+        }
+
+        return productRepository.save(savedProduct);
+    }
+    public Optional<Product> findProductById(Long productId){
+        return productRepository.findById(productId);
     }
 
 }
