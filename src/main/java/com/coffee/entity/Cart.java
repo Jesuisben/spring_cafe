@@ -31,5 +31,5 @@ public class Cart {
     // 카트안에는 카트상품이 여러개 담길 수 있어서 컬렉션(중에서도 List)로 변수 생성해야 함
     // 카트에는 여러 개의 '카트 상품'들이 담겨야 하므로 List가 좋습니다
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<CartProduct> cartProduct ;
+    private List<CartProduct> cartProducts ;
 }
