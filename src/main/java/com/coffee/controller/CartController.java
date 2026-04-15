@@ -3,6 +3,7 @@ package com.coffee.controller;
 import com.coffee.dto.CartItemDto;
 import com.coffee.dto.CartProductDto;
 import com.coffee.entity.Member;
+import com.coffee.service.CartProductService;
 import com.coffee.service.CartService;
 import com.coffee.service.MemberService;
 import lombok.RequiredArgsConstructor;
@@ -40,5 +41,36 @@ public class CartController {
         }
 
         return ResponseEntity.ok(cartService.getCartItemsByMemberId(member.getId())) ;
+    }
+
+    private final CartProductService cartProductService ;
+
+    // ""안에 있으면 {}라고 써도 문자열{}로 나올 줄 알았는데 아닌가봄
+    @PatchMapping("/edit/{cartProductId}")
+    public ResponseEntity<String> editCartProductQuantity(
+            @PathVariable Long cartProductId,
+            @RequestParam(required = false) Integer quantity,
+            @RequestParam(required = false) Long productId){
+        System.out.println("카트 상품 아이디 : " + cartProductId);
+        System.out.println("변경할 갯수 : " + quantity);
+        System.out.println("상품 아이디 : " + productId);
+
+        String message = cartProductService.editCartProductQuantity(cartProductId, quantity, productId) ;
+
+        if (message.startsWith("오류")){// CartProductService에 해당 함수에 if문으로 오류가 return되는 경우 이용
+            return ResponseEntity.badRequest().body(message) ;
+        }else{
+            return ResponseEntity.ok(message) ;
+        }
+    }
+
+    @DeleteMapping("/delete/{cartProductId}")
+    public ResponseEntity<String> deleteCartProduct(@PathVariable Long cartProductId){
+        System.out.println("삭제할 카트 상품 아이디 : " + cartProductId);
+
+        cartProductService.deleteCartProductById(cartProductId);
+
+        String message = "카트 상품 " + cartProductId + "번이 장바구니 목록에서 삭제되었습니다.";
+        return ResponseEntity.ok(message) ;
     }
 }
