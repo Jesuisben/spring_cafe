@@ -49,13 +49,11 @@ public class CartController {
     @PatchMapping("/edit/{cartProductId}")
     public ResponseEntity<String> editCartProductQuantity(
             @PathVariable Long cartProductId,
-            @RequestParam(required = false) Integer quantity,
-            @RequestParam(required = false) Long productId){
+            @RequestParam(required = false) Integer quantity){
         System.out.println("카트 상품 아이디 : " + cartProductId);
         System.out.println("변경할 갯수 : " + quantity);
-        System.out.println("상품 아이디 : " + productId);
 
-        String message = cartProductService.editCartProductQuantity(cartProductId, quantity, productId) ;
+        String message = cartProductService.editCartProductQuantity(cartProductId, quantity) ;
 
         if (message.startsWith("오류")){// CartProductService에 해당 함수에 if문으로 오류가 return되는 경우 이용
             return ResponseEntity.badRequest().body(message) ;

@@ -21,23 +21,7 @@ public class CartProductService {
 
     private final ProductRepository productRepository ;
 
-    public String editCartProductQuantity(Long cartProductId, Integer quantity, Long productId){
-        // 수량 검증
-        if(quantity == null || quantity <1){
-            return "오류 : 장바구니 품목은 최소 1개 이상이어야 합니다.";
-        }
-
-        // 재고 수량 점검
-        Optional<Product> productOptional = productRepository.findById(productId);
-        if (productOptional.isEmpty()){ // 상품 재고가 없을때
-            return "오류 : 상품 정보를 찾을 수 없습니다.";
-        }
-
-        int stock = productOptional.get().getStock();
-        if (quantity > stock){ // 손님이 입력한 수보다 재고가 부족할 경우
-            return "오류 : 재고 수량이 부족합니다.";
-        }
-
+    public String editCartProductQuantity(Long cartProductId, Integer quantity){
         // 해당 카트 상품 찾기
         // Optional이 java.util이라는 것을 무조건 외우기
         // service 코딩 중이니까 Repository한테 물어봐야 함
@@ -49,10 +33,14 @@ public class CartProductService {
             return "오류 : 카트 품목을 찾을 수 없습니다.";
         }
 
-        // 수량 변경
-        // 값을 가지고 있다는 전제하에
-        // Optional클래스와 get()메소드는 거의 정형화된 패턴이여서 기억해두기
+        // 재고 수량 점검 및 수량 변경
         CartProduct cartProduct = cartProductOptional.get();
+
+        int stock = cartProduct.getProduct().getStock() ;
+        if (quantity > stock){ // 손님이 입력한 수보다 재고가 부족할 경우
+            return "오류 : 재고 수량이 부족합니다.";
+        }
+
         // 덮어쓰기하는 경우
         cartProduct.setQuantity(quantity);
         // 만약에 누적을 할 경우 (누적 변경시 다음과 같이 코딩합니다.)

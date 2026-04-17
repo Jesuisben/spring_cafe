@@ -27,7 +27,8 @@ public class Cart {
     @JoinColumn(name = "member_id") // members테이블의 pk 컬럼명과 동일하게 적어야 함 (관례임)
     private Member member ; // carts테이블에 member_id라는 이름의 members테이블의 fk인 컬럼이 생성됨
 
-    // 여기에는 @JoinColumn을 적지 않음. 왜?
+    // 여기에는 @JoinColumn을 적지 않음. 왜? - 이것은 fk가 아니니까
+    // 양방향관계를 만들어주기 위해서 작성함
     // 카트안에는 카트상품이 여러개 담길 수 있어서 컬렉션(중에서도 List)로 변수 생성해야 함
     // 카트에는 여러 개의 '카트 상품'들이 담겨야 하므로 List가 좋습니다
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
