@@ -56,6 +56,9 @@ public class CartController {
         String message = cartProductService.editCartProductQuantity(cartProductId, quantity) ;
 
         if (message.startsWith("오류")){// CartProductService에 해당 함수에 if문으로 오류가 return되는 경우 이용
+            // getClass() : 해당 클래스명, 전체 경로명 다 보여줌
+            System.out.println(this.getClass());
+            System.out.println(message);
             return ResponseEntity.badRequest().body(message) ;
         }else{
             return ResponseEntity.ok(message) ;

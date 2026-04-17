@@ -22,6 +22,11 @@ public class CartProductService {
     private final ProductRepository productRepository ;
 
     public String editCartProductQuantity(Long cartProductId, Integer quantity){
+        // 수량 검증
+        if(quantity == null || quantity < 1){
+            return "오류 : 장바구니 품목은 최소 1개 이상이어야 합니다.";
+        }
+
         // 해당 카트 상품 찾기
         // Optional이 java.util이라는 것을 무조건 외우기
         // service 코딩 중이니까 Repository한테 물어봐야 함

@@ -24,6 +24,7 @@ public class CartItemDto {
     private String name ;
     private String image ;
     private int price ;
+    private int stock ;
     private int quantity ;
     private boolean checked ;
 
@@ -33,6 +34,7 @@ public class CartItemDto {
         this.name = cartProduct.getProduct().getName() ;
         this.image = cartProduct.getProduct().getImage() ;
         this.price = cartProduct.getProduct().getPrice() ;
+        this.stock = cartProduct.getProduct().getStock() ;
         this.quantity = cartProduct.getQuantity() ;
     }
 }

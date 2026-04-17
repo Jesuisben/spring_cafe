@@ -1,5 +1,8 @@
 package com.coffee.service;
 
+import com.coffee.constant.OrderStatus;
+import com.coffee.constant.Role;
+import com.coffee.dto.OrderDetailDto;
 import com.coffee.dto.OrderDto;
 import com.coffee.dto.OrderProductDto;
 import com.coffee.entity.Member;
@@ -9,6 +12,7 @@ import com.coffee.entity.Product;
 import com.coffee.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -23,6 +27,7 @@ public class OrderService {
     private final CartProductService cartProductService;
     private final OrderRepository orderRepository;
 
+    @Transactional
     public Order createOrder(OrderDto dto){
         Optional<Member> optionalMember = memberService.findMemberById(dto.getMemberId());
         // 그런 맴버가 없다면
@@ -80,4 +85,48 @@ public class OrderService {
 
         return orderRepository.save(order) ;
     }
+
+    // 주문 내역 조회 : 관리자(모든 내역), 일반인(본인 것만)
+    public List<OrderDetailDto> getOrderListByRole(Long memberId, Role role){
+        List<Order> orders ;
+
+        if (role == Role.ADMIN){
+            orders = orderRepository.findByOrderStatusOrderByIdDesc(OrderStatus.PENDING);
+        }else{
+            orders = orderRepository.findByMemberIdAndOrderStatusOrderByIdDesc(
+                    memberId, OrderStatus.PENDING);
+        }
+
+        return convertToOrderDetailDtoList(orders) ;
+    }
+
+
+    // 엔티티 목록을 DTO 목록으로 변환하는 공통 메서드
+    private List<OrderDetailDto> convertToOrderDetailDtoList(List<Order> orders){
+        List<OrderDetailDto> responseDtos = new ArrayList<>();
+
+        for (Order order : orders) {
+            // 주문의 기초 정보 셋팅
+            OrderDetailDto dto = new OrderDetailDto();
+            dto.setOrderId(order.getId());
+            dto.setName(order.getMember().getName()); //
+            dto.setOrderDate(order.getOrderdate());
+            dto.setStatus(order.getOrderStatus().name());
+
+            // `주문 상품` 여러 개에 대한 셋팅
+            List<OrderDetailDto.OrderItem> orderItems = new ArrayList<>();
+            for (OrderProduct op : order.getOrderProducts()) {
+                OrderDetailDto.OrderItem item =
+                        new OrderDetailDto.OrderItem(op.getProduct().getName(), op.getQuantity());
+                orderItems.add(item);
+            }
+
+            dto.setOrderItems(orderItems);
+            responseDtos.add(dto);
+        }
+
+        return responseDtos;
+    }
+
+
 }
