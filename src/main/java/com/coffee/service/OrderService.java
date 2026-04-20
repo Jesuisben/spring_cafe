@@ -128,5 +128,47 @@ public class OrderService {
         return responseDtos;
     }
 
+    @Transactional
+    public String updateOrderStatus(Long orderId, OrderStatus newStatus){
+        final String message = "해당 주문이 존재하지 않습니다. 주문 Id : " + orderId ;
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException(message));
+
+        if (order.getOrderStatus() == OrderStatus.CANCELED){
+            throw new IllegalStateException("취소된 주문은 상태를 변경할 수 없습니다.");
+        }
+
+        order.setOrderStatus(newStatus);
+
+        return "송장 번호 " + orderId + "의 주문 상태가 " + newStatus + "(으)로 변경되었습니다." ;
+    }
+
+    @Transactional
+    public String cancelOrder(Long orderId){
+        Optional<Order> orderOptional = orderRepository.findById(orderId) ;
+
+        // 주문이 있는지 확인
+        if (orderOptional.isEmpty()){
+            throw new IllegalArgumentException("해당 주문이 존재하지 않습니다. Id : " + orderId);
+        }
+
+        // 주문한 상품을 for문으로 돌림 (취소했으니까 주문 신청한 상품만큼 재고에 다시 넣기)
+        Order order = orderOptional.get() ;
+
+        for (OrderProduct op : order.getOrderProducts()){
+            Product product = op.getProduct() ;
+            int quantity = op.getQuantity() ;
+
+            // 현재 자신이 가진 재고에 quantity를 더 함
+            product.setStock(product.getStock() + quantity);
+
+            productService.save(product);
+        }
+
+        orderRepository.deleteById(orderId);
+
+        return "주문이 취소 되었습니다." ;
+    }
+
 
 }

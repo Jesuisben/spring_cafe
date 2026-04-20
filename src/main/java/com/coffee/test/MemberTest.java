@@ -42,7 +42,7 @@ public class MemberTest {
         Member mem02 = new Member();
         mem02.setName("유영석");
         mem02.setEmail("bluesky@naver.com");
-            mem02.setPassword(passwordEncoder.encode("Bluesky@456"));
+        mem02.setPassword(passwordEncoder.encode("Bluesky@456"));
         mem02.setAddress("용산구 이태원동");
         mem02.setRole(Role.USER);
         mem02.setRegdate(LocalDate.now());

@@ -1,5 +1,6 @@
 package com.coffee.controller;
 
+import com.coffee.constant.OrderStatus;
 import com.coffee.constant.Role;
 import com.coffee.dto.OrderDetailDto;
 import com.coffee.dto.OrderDto;
@@ -39,4 +40,29 @@ public class OrderController {
 
         return ResponseEntity.ok(responseDto) ;
     }
+
+    @PutMapping("/update/{orderId}")
+    public ResponseEntity<String> statusChange(@PathVariable Long orderId,
+                                               @RequestParam OrderStatus status){
+        System.out.println("수정할 항목의 아이디 : " + orderId);
+        System.out.println("변경하고자 하는 주문 상태 : " + status);
+
+        String message = orderService.updateOrderStatus(orderId, status);
+
+        return ResponseEntity.ok(message) ;
+    }
+
+    @DeleteMapping("/delete/{orderId}")
+    public ResponseEntity<String> cancelOrder(@PathVariable Long orderId){
+        try {
+            String message = orderService.cancelOrder(orderId);
+            return ResponseEntity.ok(message);
+
+        }catch(IllegalArgumentException err){
+            return ResponseEntity.notFound().build() ;
+        }
+    }
+
+
+
 }

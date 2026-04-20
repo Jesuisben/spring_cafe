@@ -241,4 +241,12 @@ public class ProductService {
         productRepository.save(product);
     }
 
+    public List<Product> getProductsByFilter(String filter){
+        // 어떤 값이 있다는 것
+        if (filter != null && !filter.isEmpty()){
+            return productRepository.findByImageContaining(filter);
+        }
+        return productRepository.findAll() ;
+    }
+
 }
