@@ -5,6 +5,10 @@ import com.coffee.service.ProductService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -23,11 +27,11 @@ public class ProductController {
     @Autowired
     private ProductService productService;
 
-    @GetMapping("/list")
-    public List<Product> list() {
-        List<Product> products = this.productService.getProductList();
-        return products;
-    }
+//    @GetMapping("/list")
+//    public List<Product> list() {
+//        List<Product> products = this.productService.getProductList();
+//        return products;
+//    }
 
     // {id}를 경로 변수라고 부르며, 가변 매개 변수라고 부름
     // 상품 50번 누르면 id가 50으로 바뀌듯 그때그때 상황에 따라 바뀜
@@ -196,6 +200,30 @@ public class ProductController {
     @GetMapping("")
     public List<Product> getBigsizeProducts(@RequestParam(required = false) String filter){
         return productService.getProductsByFilter(filter) ;
+    }
+
+    @GetMapping("/list") // 같은 매핑된 주소가 있으면 안됨 -> 예전 매핑된 list주소는 삭제하거나 주석처리
+    public ResponseEntity<Page<Product>> listProducts(
+            // 프론트에서 요구하는 파라미터와 대응되게 변수명을 작성해야 함
+            // ProductList.tsx에 있는 해당 url에 있는 parameters를 똑같이 적음
+            // defaultValue는 해당 파라미터가 속한 것의 .ts에서 찾아서 설정
+            @RequestParam(defaultValue = "0") int pageNumber,
+            @RequestParam(defaultValue = "6") int pageSize
+    ){
+        System.out.println("pageNumber : " + pageNumber + ", pageSize : " + pageSize) ;
+
+        // mysort는 정렬 방식임
+        // by라는 static 메소드 이용
+        Sort mysort = Sort.by(Sort.Direction.DESC, "id");
+
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, mysort);
+
+        Page<Product> productPage = productService.listProducts(pageable) ;
+
+        System.out.println(productPage.getContent());
+
+        // return하면 해당 url로 요청했던 프론트엔드에 해당 정보를 보내줌
+        return ResponseEntity.ok(productPage) ;
     }
 
 }

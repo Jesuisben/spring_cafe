@@ -4,6 +4,8 @@ import com.coffee.entity.Product;
 import com.coffee.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +26,10 @@ public class ProductService {
     /*상품 목록 가져 오기*/
     public List<Product> getProductList() {
         return this.productRepository.findProductByOrderByIdDesc();
+    }
+
+    public Page<Product> listProducts(Pageable pageable) {
+        return this.productRepository.findAll(pageable);
     }
 
     // application.properties에서 이미지가 있는 실제 위치 가져오기
