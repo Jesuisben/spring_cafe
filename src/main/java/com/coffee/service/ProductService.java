@@ -1,11 +1,16 @@
 package com.coffee.service;
 
+import com.coffee.constant.Category;
+import com.coffee.dto.SearchDto;
 import com.coffee.entity.Product;
 import com.coffee.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -255,4 +260,43 @@ public class ProductService {
         return productRepository.findAll() ;
     }
 
+    public Page<Product> listProducts(SearchDto searchDto, int pageNumber, int pageSize){
+        Specification<Product> spec = Specification.unrestricted() ;
+
+        // 기간 검색 콤보 박스의 조건 추가하기
+        // searchDto.getSearchDateType() 이것이 2번이상 (2번)
+        // 나오기 때문에 최적화를 위해 변수로 만들고 재사용 함
+        String searchDateType = searchDto.getSearchDateType();
+        if (searchDateType != null){
+            spec = spec.and(ProductSpecification.hasDateRange(searchDateType));
+        }
+
+        // 카테고리의 조건 추가하기
+        Category category = searchDto.getCategory() ;
+        if (category != null){ // category를 문자열로 바꾸고 대문자로 바꾸고 categoryEnum에 넣음
+            Category categoryEnum = Category.valueOf(category.toString().toUpperCase());
+            spec = spec.and(ProductSpecification.hasCategory(categoryEnum));
+        }
+
+        // 검색 모드에 따른 조건 추가하기(name 또는 description)
+        String searchMode = searchDto.getSearchMode() ;
+        String searchKeyword = searchDto.getSearchKeyword() ;
+
+        if(searchMode != null && searchKeyword != null){
+            if("name".equals(searchMode)){
+                spec = spec.and(ProductSpecification.hasNameLike(searchKeyword));
+
+            }else if("description".equals(searchMode)){
+                spec = spec.and(ProductSpecification.hasDescriptionLike(searchKeyword));
+            }
+        }
+
+        // 상품의 id를 역순으로 정렬하기
+        Sort sort = Sort.by(Sort.Order.desc("id"));
+
+        // pageNumber 페이지(0 base)를 보여 주시되, sort 방식으로 정렬하여 pageSize 개씩 보여 주세요.
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, sort);
+
+        return productRepository.findAll(spec, pageable) ;
+    }
 }

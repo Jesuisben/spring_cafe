@@ -9,7 +9,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-@AllArgsConstructor
+@AllArgsConstructor // 모든 매개변수를 생성자의 매개변수로 바꿔주는 생성자가 있다.
 public class SearchDto {
     // 조회할 날짜 검색 범위를 선정하기 위한 변수, 현재 시간과 상품 입고일을 비교하여 처리합니다.
     // all(전체 기간), 1d(하루), 1w(일주일), 1m(한달), 6m(여섯달)

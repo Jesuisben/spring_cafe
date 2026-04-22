@@ -1,5 +1,7 @@
 package com.coffee.controller;
 
+import com.coffee.constant.Category;
+import com.coffee.dto.SearchDto;
 import com.coffee.entity.Product;
 import com.coffee.service.ProductService;
 import jakarta.validation.Valid;
@@ -202,23 +204,53 @@ public class ProductController {
         return productService.getProductsByFilter(filter) ;
     }
 
+//    @GetMapping("/list") // 같은 매핑된 주소가 있으면 안됨 -> 예전 매핑된 list주소는 삭제하거나 주석처리
+//    public ResponseEntity<Page<Product>> listProducts(
+//            // 프론트에서 요구하는 파라미터와 대응되게 변수명을 작성해야 함
+//            // ProductList.tsx에 있는 해당 url에 있는 parameters를 똑같이 적음
+//            // defaultValue는 해당 파라미터가 속한 것의 .ts에서 찾아서 설정
+//            @RequestParam(defaultValue = "0") int pageNumber,
+//            @RequestParam(defaultValue = "6") int pageSize
+//    ){
+//        System.out.println("pageNumber : " + pageNumber + ", pageSize : " + pageSize) ;
+//
+//        // mysort는 정렬 방식임
+//        // by라는 static 메소드 이용
+//        Sort mysort = Sort.by(Sort.Direction.DESC, "id");
+//
+//        Pageable pageable = PageRequest.of(pageNumber, pageSize, mysort);
+//
+//        Page<Product> productPage = productService.listProducts(pageable) ;
+//
+//        System.out.println(productPage.getContent());
+//
+//        // return하면 해당 url로 요청했던 프론트엔드에 해당 정보를 보내줌
+//        return ResponseEntity.ok(productPage) ;
+//    }
+
     @GetMapping("/list") // 같은 매핑된 주소가 있으면 안됨 -> 예전 매핑된 list주소는 삭제하거나 주석처리
     public ResponseEntity<Page<Product>> listProducts(
             // 프론트에서 요구하는 파라미터와 대응되게 변수명을 작성해야 함
             // ProductList.tsx에 있는 해당 url에 있는 parameters를 똑같이 적음
-            // defaultValue는 해당 파라미터가 속한 것의 .ts에서 찾아서 설정
+            // defaultValue는 해당 파라미터가 속한 것의 .ts에서 찾아서 설정 (paging.ts)
             @RequestParam(defaultValue = "0") int pageNumber,
-            @RequestParam(defaultValue = "6") int pageSize
+            @RequestParam(defaultValue = "6") int pageSize,
+
+            // defaultValue는 해당 파라미터가 속한 것의 .ts에서 찾아서 설정 (SearchCondition.ts)
+            @RequestParam(defaultValue = "all") String searchDateType,
+            @RequestParam(defaultValue = "") Category category,
+            @RequestParam(defaultValue = "") String searchMode,
+            @RequestParam(defaultValue = "") String searchKeyword
     ){
-        System.out.println("pageNumber : " + pageNumber + ", pageSize : " + pageSize) ;
+        // 모든 매개변수를 가진 생성자 (@AllArgsConstructor에 의해서)
+        SearchDto searchDto = new SearchDto(searchDateType, category, searchMode, searchKeyword);
 
-        // mysort는 정렬 방식임
-        // by라는 static 메소드 이용
-        Sort mysort = Sort.by(Sort.Direction.DESC, "id");
+        Page<Product> productPage = productService.listProducts(searchDto, pageNumber, pageSize) ;
 
-        Pageable pageable = PageRequest.of(pageNumber, pageSize, mysort);
-
-        Page<Product> productPage = productService.listProducts(pageable) ;
+        System.out.println("검색 조건 : " + searchDto);
+        System.out.println("총 상품 갯수 : " + productPage.getTotalElements());
+        System.out.println("총 페이지 번호 : " + productPage.getTotalPages());
+        System.out.println("현재 페이지 번호 : " + productPage.getNumber());
 
         System.out.println(productPage.getContent());
 
